@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>League of Legends Account Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="text"] {
+            padding: 5px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+        button {
+            padding: 5px;
+            font-size: 16px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #555;
+        }
+        p {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        li {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>League of Legends Account Checker</h1>
+        <label for="summonerName">Summoner Name:</label>
+        <input type="text" id="summonerName">
+        <button onclick="checkAccount()">Check Account</button>
+        <div id="results"></div>
+    </div>
+    <script>
+        function checkAccount() {
+            // Replace <YOUR_API_KEY> and <REGION> with your actual API key and the region of the player's account, respectively
+            const apiKey = "<YOUR_API_KEY>";
+            const region = "<REGION>";
+            const summonerName = document.getElementById("summonerName").value;
+            let summonerId = "";
+            let championMastery = [];
+            let skins = [];
+
+            fetch(`https://${region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/${summonerName}?api_key=${apiKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    summonerId = data.id;
+
+                    return fetch(`https://${region}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/${summonerId}?api_key=${apiKey}`);
+                })
+                .then(response => response.json())
+                .then(data => {
+                    championMastery = data;
+
+                    return fetch(`https://${region}.api.riotgames.com/lol/summoner/v4/summoners/${summonerId}/skins?api_key=${apiKey}`);
+                })
+                .then(response => response.json())
+                .then(data => {
+                    skins = data;
+
+                    const resultsDiv = document.getElementById("results");
+                    resultsDiv.innerHTML = `<p>${summonerName} owns the following champions:</p><ul>`;
+                    championMastery.forEach(champion => {
+                        const championId = champion.championId;
+                        resultsDiv.innerHTML += `<li>${championId}</li>`;
+                    });
+                    resultsDiv.innerHTML += `</ul><p>${summonerName} owns the following skins:</p><ul>`;
+                    skins.forEach(skin => {
+                        const skinName = skin.name;
+                        resultsDiv.innerHTML += `<li>${skinName}</li>`;
+                    });
+                    resultsDiv.innerHTML += `</ul>`;
+                })
+                .catch(error => console.error(error));
+        }
+    </script>
+</body>
+</html>
